@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ワリカン計算機</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- タイトル -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-800">🍽️ ワリカン計算機</h1>
+            <p class="text-gray-600 mt-2">割り勘の計算をシンプルに</p>
+        </div>
+
+        <!-- カード -->
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <!-- エラーメッセージ -->
+            <div id="errorAlert" class="hidden mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
+                <p id="errorMessage"></p>
+            </div>
+
+            <!-- 入力フォーム -->
+            <form id="form" class="space-y-6">
+                <!-- 合計金額入力 -->
+                <div>
+                    <label for="totalAmount" class="block text-sm font-semibold text-gray-700 mb-2">
+                        合計金額（円）
+                    </label>
+                    <div class="flex items-center border-2 border-gray-300 rounded-lg focus-within:border-blue-500">
+                        <input
+                            type="number"
+                            id="totalAmount"
+                            placeholder="例：3000"
+                            min="1"
+                            step="1"
+                            class="flex-1 px-4 py-3 outline-none"
+                        >
+                        <span class="px-4 text-gray-600 font-medium">円</span>
+                    </div>
+                </div>
+
+                <!-- 人数入力 -->
+                <div>
+                    <label for="headCount" class="block text-sm font-semibold text-gray-700 mb-2">
+                        人数
+                    </label>
+                    <div class="flex items-center border-2 border-gray-300 rounded-lg focus-within:border-blue-500">
+                        <input
+                            type="number"
+                            id="headCount"
+                            placeholder="例：4"
+                            min="1"
+                            step="1"
+                            class="flex-1 px-4 py-3 outline-none"
+                        >
+                        <span class="px-4 text-gray-600 font-medium">人</span>
+                    </div>
+                </div>
+
+                <!-- ボタングループ -->
+                <div class="flex gap-4 pt-4">
+                    <button
+                        type="submit"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md"
+                    >
+                        計算する
+                    </button>
+                    <button
+                        type="button"
+                        id="clearBtn"
+                        class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-6 rounded-lg transition duration-200"
+                    >
+                        クリア
+                    </button>
+                </div>
+            </form>
+
+            <!-- 結果表示 -->
+            <div id="resultSection" class="hidden mt-8 pt-8 border-t-2 border-gray-200">
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <p class="text-gray-600 text-sm mb-2">✓ 計算結果</p>
+                    <p class="text-gray-700 font-medium mb-2">一人当たりの金額</p>
+                    <p id="resultAmount" class="text-4xl font-bold text-blue-600">
+                        ¥0
+                    </p>
+                    <p id="detailInfo" class="text-gray-600 text-sm mt-4"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- フッター -->
+        <div class="text-center mt-6 text-gray-600 text-sm">
+            <p>シンプルで使いやすい割り勘計算ツール</p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('form');
+        const totalAmountInput = document.getElementById('totalAmount');
+        const headCountInput = document.getElementById('headCount');
+        const clearBtn = document.getElementById('clearBtn');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+        const resultSection = document.getElementById('resultSection');
+        const resultAmount = document.getElementById('resultAmount');
+        const detailInfo = document.getElementById('detailInfo');
+
+        // エラーを表示する関数
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('hidden');
+            resultSection.classList.add('hidden');
+        }
+
+        // エラーを非表示にする関数
+        function hideError() {
+            errorAlert.classList.add('hidden');
+        }
+
+        // 入力値をバリデーションして計算する関数
+        function calculate(e) {
+            e.preventDefault();
+            hideError();
+
+            const totalAmount = totalAmountInput.value.trim();
+            const headCount = headCountInput.value.trim();
+
+            // 空欄チェック
+            if (totalAmount === '' || headCount === '') {
+                showError('合計金額と人数を入力してください');
+                return;
+            }
+
+            // 数値に変換
+            const totalNum = parseFloat(totalAmount);
+            const headNum = parseFloat(headCount);
+
+            // 数値チェック
+            if (isNaN(totalNum) || isNaN(headNum)) {
+                showError('数値を入力してください');
+                return;
+            }
+
+            // 値の範囲チェック
+            if (totalNum <= 0 || headNum <= 0) {
+                showError('1以上の値を入力してください');
+                return;
+            }
+
+            // 人数が整数チェック
+            if (!Number.isInteger(headNum)) {
+                showError('人数は整数を入力してください');
+                return;
+            }
+
+            // 計算実行
+            const perPerson = totalNum / headNum;
+            const rounded = Math.ceil(perPerson / 100) * 100;
+
+            // 結果を表示
+            resultAmount.textContent = `¥${rounded.toLocaleString('ja-JP')}`;
+
+            // 詳細情報を表示
+            const exactAmount = (totalNum / headNum).toFixed(2);
+            detailInfo.textContent = `${totalAmount}円 ÷ ${headCount}人 = ${rounded.toLocaleString('ja-JP')}円（100円単位で切り上げ）`;
+
+            resultSection.classList.remove('hidden');
+        }
+
+        // フォーム送信イベント
+        form.addEventListener('submit', calculate);
+
+        // クリアボタンのイベント
+        clearBtn.addEventListener('click', () => {
+            totalAmountInput.value = '';
+            headCountInput.value = '';
+            hideError();
+            resultSection.classList.add('hidden');
+            totalAmountInput.focus();
+        });
+
+        // 入力欄のフォーカス時にエラーを消す
+        totalAmountInput.addEventListener('focus', hideError);
+        headCountInput.addEventListener('focus', hideError);
+    </script>
+</body>
+</html>
