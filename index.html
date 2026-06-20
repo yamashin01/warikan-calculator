@@ -119,6 +119,12 @@
             errorAlert.classList.add('hidden');
         }
 
+        // 通貨フォーマッター
+        const jpyFormatter = new Intl.NumberFormat('ja-JP', {
+            style: 'currency',
+            currency: 'JPY'
+        });
+
         // 入力値をバリデーションして計算する関数
         function calculate(e) {
             e.preventDefault();
@@ -160,10 +166,10 @@
             const rounded = Math.ceil(perPerson / 100) * 100;
 
             // 結果を表示
-            resultAmount.textContent = `¥${rounded.toLocaleString('ja-JP')}`;
+            resultAmount.textContent = jpyFormatter.format(rounded);
 
             // 詳細情報を表示
-            detailInfo.textContent = `${totalAmount}円 ÷ ${headCount}人 = ${rounded.toLocaleString('ja-JP')}円（100円単位で切り上げ）`;
+            detailInfo.textContent = `${totalAmount}円 ÷ ${headCount}人 = ${jpyFormatter.format(rounded)}（100円単位で切り上げ）`;
 
             resultSection.classList.remove('hidden');
         }
